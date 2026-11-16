@@ -124,7 +124,10 @@ async function getSignedImage(client, storagePath) {
     { transform: { width: 800, height: 700, resize: 'cover', quality: 75 } },
   );
   if (error) {
-    console.error('Unable to create an approved image URL:', error);
+    console.error('Unable to create an approved image URL:', {
+      code: error.code,
+      status: error.status,
+    });
     throw new Error('An approved community photo could not be prepared for display.');
   }
   return data.signedUrl;
@@ -134,7 +137,10 @@ export async function getApprovedMemories() {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_public_memories');
   if (error) {
-    console.error('Unable to load approved community memories:', error);
+    console.error('Unable to load approved community memories:', {
+      code: error.code,
+      status: error.status,
+    });
     throw new Error('Approved memories are temporarily unavailable.');
   }
   return Promise.all((data ?? []).map(async (item) => ({
@@ -147,7 +153,10 @@ export async function getApprovedStories() {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_public_stories');
   if (error) {
-    console.error('Unable to load approved community stories:', error);
+    console.error('Unable to load approved community stories:', {
+      code: error.code,
+      status: error.status,
+    });
     throw new Error('Approved community stories are temporarily unavailable.');
   }
   return Promise.all((data ?? []).map(async (item) => ({
@@ -160,7 +169,10 @@ export async function getApprovedTestimonials() {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_public_testimonials');
   if (error) {
-    console.error('Unable to load approved testimonials:', error);
+    console.error('Unable to load approved testimonials:', {
+      code: error.code,
+      status: error.status,
+    });
     throw new Error('Approved testimonials are temporarily unavailable.');
   }
   return data ?? [];

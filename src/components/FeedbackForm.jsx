@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ArrowRight, LoaderCircle, Send } from 'lucide-react';
 import { submitFeedback } from '../services/feedback.js';
 import ExperienceOptions from './ExperienceOptions.jsx';
@@ -72,6 +72,7 @@ export default function FeedbackForm({ onSuccess }) {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInProgress = useRef(false);
 
   function update(field, value) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -80,7 +81,7 @@ export default function FeedbackForm({ onSuccess }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (submissionInProgress.current) return;
     const nextErrors = validate(values);
     setErrors(nextErrors);
     setSubmitError('');
@@ -93,6 +94,7 @@ export default function FeedbackForm({ onSuccess }) {
       return;
     }
 
+    submissionInProgress.current = true;
     setIsSubmitting(true);
     try {
       await submitFeedback(values);
@@ -100,6 +102,7 @@ export default function FeedbackForm({ onSuccess }) {
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
+      submissionInProgress.current = false;
       setIsSubmitting(false);
     }
   }

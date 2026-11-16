@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Camera, Coffee, ImagePlus, LoaderCircle, X } from 'lucide-react';
 import { getApprovedMemories, submitPhotoSubmission, validateImage } from '../services/community.js';
 import ConsentChoice from './ConsentChoice.jsx';
@@ -13,6 +13,7 @@ function MemoryUploadForm({ onClose, onSubmitted }) {
   const [fieldError, setFieldError] = useState('');
   const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInProgress = useRef(false);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ function MemoryUploadForm({ onClose, onSubmitted }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (submissionInProgress.current) return;
     const validationError = validateImage(file);
     if (validationError) {
       setFieldError(validationError);
@@ -44,6 +45,7 @@ function MemoryUploadForm({ onClose, onSubmitted }) {
 
     setFieldError('');
     setError('');
+    submissionInProgress.current = true;
     setIsSubmitting(true);
     try {
       await submitPhotoSubmission({ ...values, file }, setProgress);
@@ -52,6 +54,7 @@ function MemoryUploadForm({ onClose, onSubmitted }) {
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'We couldn’t send this photo. Please try again.');
     } finally {
+      submissionInProgress.current = false;
       setIsSubmitting(false);
     }
   }

@@ -34,6 +34,7 @@ Without Supabase configuration, the site still renders, but submissions show a s
 2. Run the migrations in order from the Supabase SQL Editor:
    - [`202610220001_create_feedback.sql`](./supabase/migrations/202610220001_create_feedback.sql)
    - [`202610220002_community_content.sql`](./supabase/migrations/202610220002_community_content.sql)
+   - [`202611160001_harden_community_policy_helpers.sql`](./supabase/migrations/202611160001_harden_community_policy_helpers.sql)
 3. Copy the project URL and publishable/anon key to `.env`.
 4. Restart Vite.
 
@@ -54,6 +55,7 @@ Therefore, a Storage object whose name starts with `stories/` is not expected to
 - The browser has no `SELECT`, `UPDATE`, or `DELETE` permission for submission tables. RLS remains enabled.
 - The private Storage bucket accepts image uploads only in the `submissions/` and `stories/` folders. Objects cannot be read publicly by their storage path. Storage read policy permits signed URLs only for an approved photo with photo-display consent or an approved, consented story photo.
 - Public list RPCs expose only approved, consented display fields. They do not return participant email, private feedback, moderation notes, or unapproved content.
+- The policy helper functions are kept in a non-public schema. Do not add that schema to Supabase's exposed API schemas; only the three `get_public_*` list functions are intended as public RPCs.
 - Testimonial consent, name-display consent, story consent, story-name consent, and photo-display consent are separate. An approval status is additionally required before content appears publicly.
 - A photo can be uploaded without public-display consent, but remains private and cannot be approved for the public gallery. A story can likewise be submitted without publication consent.
 - Signed gallery image URLs are short-lived (one hour); clients should request fresh URLs for a later page visit.

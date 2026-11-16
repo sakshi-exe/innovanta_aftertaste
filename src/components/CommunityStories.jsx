@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BookHeart, ImagePlus, LoaderCircle, Send } from 'lucide-react';
 import { getApprovedStories, submitCommunityStory, validateImage } from '../services/community.js';
 import ConsentChoice from './ConsentChoice.jsx';
@@ -19,6 +19,7 @@ export default function CommunityStories() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const submissionInProgress = useRef(false);
 
   useEffect(() => {
     if (!values.photo) {
@@ -56,7 +57,7 @@ export default function CommunityStories() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (submissionInProgress.current) return;
     const nextErrors = {};
     if (!values.name.trim()) nextErrors.name = 'Please add your name for the review team.';
     else if (values.name.trim().length > 100) nextErrors.name = 'Please keep your name under 100 characters.';
@@ -98,6 +99,7 @@ export default function CommunityStories() {
       return;
     }
 
+    submissionInProgress.current = true;
     setIsSubmitting(true);
     try {
       await submitCommunityStory(values, setProgress);
@@ -106,6 +108,7 @@ export default function CommunityStories() {
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'We couldn’t save your story. Please try again.');
     } finally {
+      submissionInProgress.current = false;
       setIsSubmitting(false);
     }
   }
