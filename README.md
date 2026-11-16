@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+Your local README content
+=======
+GitHub README content
+>>>>>>> origin/main<<<<<<< HEAD
 # Brew & Build — The Aftertaste
 
 A responsive community microsite for Brew & Build by INNOVANTA. Participants can submit private feedback, community stories, and event photos. Approved public content is served through narrowly scoped Supabase RPC functions; submissions are never published automatically.
@@ -140,3 +145,6 @@ supabase/
 ```
 
 The memories and stories galleries display only real submissions that have passed consent and moderation. Until then they show an explicitly empty state rather than fabricated participant content or stock photography.
+=======
+# innovanta_aftertaste
+>>>>>>> origin/main
