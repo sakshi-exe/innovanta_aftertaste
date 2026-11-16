@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-Your local README content
-=======
-GitHub README content
->>>>>>> origin/main<<<<<<< HEAD
 # Brew & Build — The Aftertaste
 
 A responsive community microsite for Brew & Build by INNOVANTA. Participants can submit private feedback, community stories, and event photos. Approved public content is served through narrowly scoped Supabase RPC functions; submissions are never published automatically.
@@ -52,7 +47,11 @@ The two photo contribution forms intentionally create rows in different tables:
 - **Add Your Memory** uploads to `community-memories/submissions/...` and inserts a row into `public.photo_submissions` using `storage_path`.
 - **Stories from the Same Table** uploads an optional image to `community-memories/stories/...` and inserts its story row into `public.community_stories` using `photo_storage_path`.
 
-Therefore, a Storage object whose name starts with `stories/` is not expected to appear in `photo_submissions`; check `community_stories.photo_storage_path` instead. Both flows await the corresponding metadata insert before showing success. The insert requests an exact affected-row count and accepts success only when one row is confirmed; this does not grant the browser `SELECT` access. If an insert fails after upload, the client reports failure and the uploaded object remains private for an authenticated operator to inspect or remove. The client logs only the Supabase error code/status and affected-row count, not the participant's data or full error response.
+Therefore, a Storage object whose name starts with `stories/` is not expected to appear in `photo_submissions`; check `community_stories.photo_storage_path` instead.
+
+Both flows await the corresponding metadata insert before showing success. The insert requests an exact affected-row count and accepts success only when one row is confirmed; this does not grant the browser `SELECT` access.
+
+If an insert fails after upload, the client reports failure and the uploaded object remains private for an authenticated operator to inspect or remove. The client logs only the Supabase error code/status and affected-row count, not the participant's data or full error response.
 
 ### Privacy and access control
 
@@ -123,11 +122,15 @@ For a photo returned by the memory or story RPC, request a short-lived signed UR
 const { data, error } = await supabase.storage
   .from('community-memories')
   .createSignedUrl(memory.storage_path, 60 * 60);
+
 if (error) throw error;
+
 const imageUrl = data.signedUrl;
 ```
 
-The same RPCs are available over Supabase's PostgREST `/rest/v1/rpc/<function-name>` endpoint for a non-JavaScript site. Do not query the submission tables from the main site's public client. The functions return only public fields and filter for approval plus consent; feature flags are editorial metadata and do not bypass either condition. Photos are returned only when approved and consented. The microsite requests 800×700, quality-75 Storage image transformations for lazy-loaded gallery thumbnails; enable Supabase Image Transformations for the project plan before relying on that image optimization. Use the returned IDs for stable keys and request new signed URLs after expiration.
+The same RPCs are available over Supabase's PostgREST `/rest/v1/rpc/<function-name>` endpoint for a non-JavaScript site. Do not query the submission tables from the main site's public client. The functions return only public fields and filter for approval plus consent; feature flags are editorial metadata and do not bypass either condition. Photos are returned only when approved and consented.
+
+The microsite requests 800×700, quality-75 Storage image transformations for lazy-loaded gallery thumbnails; enable Supabase Image Transformations for the project plan before relying on that image optimization. Use the returned IDs for stable keys and request new signed URLs after expiration.
 
 `src/services/community.js` contains reusable frontend retrieval functions (`getApprovedTestimonials`, `getApprovedStories`, `getApprovedMemories`) as examples for another compatible JavaScript project.
 
@@ -140,11 +143,44 @@ src/
   services/         Feedback, upload, and approved-content APIs
   App.jsx           Page composition
   styles.css        Design tokens, responsive layouts, and motion
+
 supabase/
   migrations/       Schema, private bucket, RLS, storage policies, public RPCs
 ```
 
 The memories and stories galleries display only real submissions that have passed consent and moderation. Until then they show an explicitly empty state rather than fabricated participant content or stock photography.
-=======
-# innovanta_aftertaste
->>>>>>> origin/main
+
+## Security and production readiness
+
+The frontend and database implementation has undergone a code-level security and reliability review.
+
+### Implemented improvements
+
+- Moved internal `SECURITY DEFINER` storage-policy helper functions out of the exposed `public` schema through a forward migration.
+- Kept the intended public gallery RPCs unchanged.
+- Reduced browser error logging to avoid exposing full Supabase error objects.
+- Added in-flight guards to feedback, photo, and story submissions to prevent accidental concurrent duplicate requests.
+- Replaced project-specific environment example values with generic placeholders.
+- No service-role key was found in frontend source during the audit.
+
+### Remaining production requirements
+
+- Apply all three Supabase migrations in order, including the new helper-hardening migration.
+- Keep the `private` schema out of Supabase's exposed API schemas.
+- Verify Storage image transformations are enabled.
+- Configure rate limits/CAPTCHA or a rate-limited server-side upload path before public launch.
+- Test the full feedback, story, and photo upload flows against the actual Supabase project.
+- Verify signed URL authorization and expiry using real project credentials.
+- Inspect and remove private orphan uploads if a metadata insert fails after a successful upload.
+- Consider server-side idempotency to prevent duplicate records if a request commits but its response is lost.
+
+### Verification performed
+
+- `npm install` succeeded.
+- `npm run build` passed.
+- Production preview returned HTTP 200.
+- `git diff --check` passed.
+- No existing test files or test script were configured.
+- Live Supabase submission and Storage operations were not tested because they require actual project configuration.
+
+**Current readiness: Staging-ready, not production-verified.** Complete the Supabase migration, dashboard configuration, abuse controls, and manual end-to-end checks before public launch.
